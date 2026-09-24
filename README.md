@@ -4,12 +4,13 @@ Public page: https://httpmax.github.io/issues/
 
 One list of every problem found in the Freight Country platform since the handover from the original agency (Deorwine Infotech), with fix status, whose code caused it, and which developer wrote that code.
 
-- `issues.json`: the data. One entry per issue.
+- `issues.enc.json`: the data, encrypted. The page asks for a password and decrypts it in the browser.
+- `issues.json`: the plain data. Kept only on the owner's machine (git-ignored), never pushed.
 - `index.html`: the page that shows it. Needs no build step.
 
 ## Updating
 
-Edit `issues.json` and push to `main`. The page updates within a minute or two.
+Edit `issues.json`, then run `ISSUES_PASSWORD=... node encrypt.mjs` and push `issues.enc.json` to `main`. The page updates within a minute or two.
 
 Each entry:
 
