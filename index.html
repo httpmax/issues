@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Freight Country Issue Tracker</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap">
+<style>
+:root{
+  --ground:#F5F7F9; --surface:#FFFFFF; --raised:#F0F3F6;
+  --ink:#161A20; --muted:#565F6B; --faint:#737C87;
+  --border:#E4E8ED; --border-strong:#D3D9E0;
+  --accent:#234E9C;
+  --critical:#B02334; --high:#8F5400; --medium:#2F5C8A; --low:#5E6873;
+  --good:#1F6E4A; --good-bg:#E4F2EA; --warn:#8F5400; --warn-bg:#F8F1E1; --bad:#B02334; --bad-bg:#F9EAEC; --wait:#4B5563; --wait-bg:#EDF0F4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#0E1116; --surface:#161A20; --raised:#1B2029;
+    --ink:#E8EBEF; --muted:#9AA3AE; --faint:#7D8691;
+    --border:#262C34; --border-strong:#333B45; --accent:#7AA6FF;
+    --critical:#F0808C; --high:#E0A64D; --medium:#86B0E6; --low:#9BA7B5;
+    --good:#6FD3AA; --good-bg:#112420; --warn:#E0A64D; --warn-bg:#251D10; --bad:#F0808C; --bad-bg:#2A1618; --wait:#AEB6C0; --wait-bg:#1B2027;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1040px; margin:0 auto; padding:56px 24px 96px;}
+.masthead{border-top:3px solid var(--accent); padding-top:24px;}
+.eyebrow{font-size:12px; letter-spacing:.15em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+h1{font-family:'IBM Plex Serif',Georgia,serif; font-weight:700; font-size:clamp(34px,6vw,50px); line-height:1.05; margin:.26em 0 .16em; letter-spacing:-.015em;}
+.subtitle{font-size:16.5px; color:var(--muted); max-width:66ch; margin:0;}
+.updated{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--faint); margin-top:10px;}
+.block{margin-top:40px;}
+.block-title{font-size:12.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--faint); font-weight:600; margin:0 0 14px; display:flex; align-items:center; gap:12px;}
+.block-title::after{content:""; flex:1; height:1px; background:var(--border);}
+.sums{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; align-items:start;}
+.sum h3{font-size:13px; font-weight:600; color:var(--muted); margin:0 0 6px;}
+.rows{display:grid; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:8px; overflow:hidden;}
+.row{background:var(--surface); display:flex; justify-content:space-between; gap:14px; padding:8px 13px; font-size:14px;}
+.row .n{font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--muted); font-variant-numeric:tabular-nums;}
+.row.total{background:var(--raised); font-weight:700;} .row.total .n{color:var(--ink);}
+.filters{display:flex; flex-wrap:wrap; gap:10px; align-items:end;}
+.filters label{display:grid; gap:3px; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); font-weight:600;}
+.filters select,.filters input{font:inherit; font-size:14px; text-transform:none; letter-spacing:0; color:var(--ink); background:var(--surface); border:1px solid var(--border-strong); border-radius:6px; padding:6px 8px; min-width:0;}
+.filters input{width:210px; max-width:100%;}
+.count{font-size:13.5px; color:var(--muted); margin:14px 0 0;}
+.group{margin-top:26px;}
+.group-head{display:flex; align-items:baseline; gap:10px; padding-bottom:8px; border-bottom:2px solid var(--sev);}
+.group-head .lbl{font-size:19px; font-weight:700;}
+.group-head .n{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--sev); font-weight:600;}
+.sev-critical{--sev:var(--critical);} .sev-high{--sev:var(--high);} .sev-medium{--sev:var(--medium);} .sev-low{--sev:var(--low);}
+.item{display:grid; grid-template-columns:62px 1fr 150px 170px; gap:14px; align-items:baseline; padding:12px 4px 12px 12px; border-left:3px solid var(--sev); border-bottom:1px solid var(--border); background:var(--surface);}
+.i-id{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:var(--sev);}
+.i-title{font-weight:600; font-size:14.5px;}
+.i-plain{display:block; color:var(--muted); font-size:13.5px; max-width:70ch;}
+.i-src{display:block; font-size:12px; color:var(--faint); margin-top:3px;}
+.pill{display:inline-block; font-size:12px; font-weight:600; padding:1px 8px; border-radius:20px; white-space:nowrap;}
+.st-fixed_live{color:var(--good); background:var(--good-bg);}
+.st-fixed_staging{color:var(--good); background:var(--good-bg); outline:1px dashed var(--good); outline-offset:-1px;}
+.st-partly{color:var(--warn); background:var(--warn-bg);}
+.st-open{color:var(--bad); background:var(--bad-bg);}
+.st-waiting_owner,.st-not_a_bug,.st-wont_fix{color:var(--wait); background:var(--wait-bg);}
+.i-note{display:block; font-size:12px; color:var(--faint); margin-top:4px;}
+.i-who{font-size:13px; font-weight:600;}
+.i-who small{display:block; font-weight:400; color:var(--faint); font-size:12px;}
+[hidden]{display:none!important}
+.gate{min-height:100vh; display:grid; place-items:center; padding:24px 16px;}
+.gate-card{width:100%; max-width:380px; background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--accent); border-radius:10px; padding:28px 24px;}
+.gate-card h1{font-size:30px; margin:.2em 0 .7em;}
+.gate-card label{display:block; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); font-weight:600; margin-bottom:6px;}
+.gate-row{display:flex; gap:8px;}
+.gate-row input{flex:1; min-width:0; font:inherit; font-size:15px; color:var(--ink); background:var(--ground); border:1px solid var(--border-strong); border-radius:6px; padding:8px 10px;}
+.gate-row button{font:inherit; font-size:14.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:6px; padding:8px 16px; cursor:pointer;}
+.gate-row input:focus-visible,.gate-row button:focus-visible,.filters select:focus-visible,.filters input:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.gate-msg{min-height:1.4em; font-size:13.5px; color:var(--bad); margin:10px 0 0;}
+.foot{margin-top:52px; padding-top:18px; border-top:1px solid var(--border); font-size:12.5px; color:var(--faint); max-width:80ch; line-height:1.6;}
+.foot p{margin:0 0 9px;} .foot strong{color:var(--muted);}
+@media (max-width:760px){
+  .wrap{padding:40px 16px 72px;}
+  .item{grid-template-columns:52px 1fr;}
+  .i-status,.i-who{grid-column:2;}
+}
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <form class="gate-card" id="gate-form">
+    <div class="eyebrow">Freight Country &middot; Issue Tracker</div>
+    <h1>Private list</h1>
+    <label for="gate-pw">Password</label>
+    <div class="gate-row"><input id="gate-pw" type="password" autocomplete="current-password" required autofocus><button type="submit">Open</button></div>
+    <p class="gate-msg" id="gate-msg" role="status"></p>
+  </form>
+</div>
+<div class="wrap" id="main" hidden>
+  <header class="masthead">
+    <div class="eyebrow">Freight Country &middot; Issue Tracker</div>
+    <h1>Every issue, one place</h1>
+    <p class="subtitle">All problems found in the Freight Country platform since the handover from the original agency, Deorwine Infotech: whether each is fixed, whose code caused it, and which developer wrote that code.</p>
+    <div class="updated" id="updated"></div>
+  </header>
+
+  <section class="block">
+    <h2 class="block-title">Summary</h2>
+    <div class="sums">
+      <div class="sum"><h3>Status</h3><div class="rows" id="s-status"></div></div>
+      <div class="sum"><h3>Whose code caused it</h3><div class="rows" id="s-fault"></div></div>
+      <div class="sum"><h3>Severity</h3><div class="rows" id="s-sev"></div></div>
+      <div class="sum"><h3>Developers responsible</h3><div class="rows" id="s-dev"></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="block-title">All issues</h2>
+    <div class="filters">
+      <label for="f-status">Status<select id="f-status"></select></label>
+      <label for="f-fault">Caused by<select id="f-fault"></select></label>
+      <label for="f-dev">Developer<select id="f-dev"></select></label>
+      <label for="f-list">Found in<select id="f-list"></select></label>
+      <label for="f-q">Search<input id="f-q" type="search" placeholder="ID or words"></label>
+    </div>
+    <p class="count" id="count"></p>
+    <div id="list"></div>
+  </section>
+
+  <footer class="foot">
+    <p><strong>Status.</strong> Fixed on live = fixed on the live site. Fixed on staging = fixed and waiting to go live (dashed outline). Partly fixed = some of it is still left. Waiting on decision = needs a business decision first.</p>
+    <p><strong>Severity.</strong> Critical = security, other companies' data, wrong money or legal exposure. High = core business logic is wrong or users get stuck. Medium = missing logic or alerts. Low = display, wording or polish.</p>
+    <p><strong>How fault was decided.</strong> Each issue was checked against the last code the agency delivered (28 May 2026), before any work by the new team. Agency = the problem was already in that code. Our team = it came from work done after the handover. Both = it started in agency code and later work touched or extended it. Developer names come from line-level version history of the affected code.</p>
+  </footer>
+</div>
+<script>
+(function(){
+  var LISTS={security:'Security sweep (Aug 2026)',fixlist:'Bug fix list (Sep 2026)',beta:'Beta test (Sep 2026)',scenario:'Scenario audit (Sep 2026)'};
+  var STATUS=[['fixed_live','Fixed on live'],['fixed_staging','Fixed on staging'],['partly','Partly fixed'],['open','Open'],['waiting_owner','Waiting on decision'],['not_a_bug','Not a bug'],['wont_fix','Won’t fix']];
+  var FAULT=[['agency','Agency'],['ours','Our team'],['mixed','Both'],['unclear','Unclear']];
+  var SEV=[['critical','Critical'],['high','High'],['medium','Medium'],['low','Low']];
+  function lab(pairs,k){for(var i=0;i<pairs.length;i++) if(pairs[i][0]===k) return pairs[i][1]; return k;}
+  function el(t,c,x){var e=document.createElement(t); if(c)e.className=c; if(x!=null)e.textContent=x; return e;}
+  function rows(box,items,total){ items.forEach(function(p){ if(!p[1])return; var r=el('div','row'); r.appendChild(el('span',null,p[0])); r.appendChild(el('span','n',p[1])); box.appendChild(r); });
+    if(total!=null){var t=el('div','row total'); t.appendChild(el('span',null,'Total')); t.appendChild(el('span','n',total)); box.appendChild(t);} }
+  function count(D,f,pairs){ return pairs.map(function(p){ return [p[1], D.filter(function(x){return f(x)===p[0];}).length]; }); }
+  function opt(sel,pairs,all){ sel.appendChild(new Option(all,'')); pairs.forEach(function(p){ sel.appendChild(new Option(p[1],p[0])); }); }
+
+  function b64(s){ var b=atob(s), u=new Uint8Array(b.length); for(var i=0;i<b.length;i++) u[i]=b.charCodeAt(i); return u; }
+  function decrypt(E,pw){
+    var enc=new TextEncoder();
+    return crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']).then(function(base){
+      return crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(E.salt),iterations:E.iterations,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+    }).then(function(key){ return crypto.subtle.decrypt({name:'AES-GCM',iv:b64(E.iv)},key,b64(E.data)); })
+      .then(function(buf){ return JSON.parse(new TextDecoder().decode(buf)); });
+  }
+  var gate=document.getElementById('gate'), main=document.getElementById('main'), form=document.getElementById('gate-form'), pwIn=document.getElementById('gate-pw'), msg=document.getElementById('gate-msg');
+  fetch('issues.enc.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(E){
+    function tryPw(pw,quiet){
+      msg.textContent=quiet?'':'Unlocking…';
+      return decrypt(E,pw).then(function(J){ try{sessionStorage.setItem('fc-issues-pw',pw);}catch(e){} gate.hidden=true; main.hidden=false; start(J); })
+        .catch(function(){ if(!quiet){ msg.textContent='That password is not right. Try again.'; pwIn.select(); } });
+    }
+    form.addEventListener('submit',function(e){ e.preventDefault(); tryPw(pwIn.value,false); });
+    var saved=null; try{saved=sessionStorage.getItem('fc-issues-pw');}catch(e){}
+    if(saved) tryPw(saved,true);
+  }).catch(function(){ msg.textContent='Could not load the issue data.'; });
+
+  function start(J){
+    var D=J.issues;
+    document.getElementById('updated').textContent='Last updated '+J.updated+' · '+D.length+' issues';
+    rows(document.getElementById('s-status'),count(D,function(x){return x.status;},STATUS),D.length);
+    rows(document.getElementById('s-fault'),count(D,function(x){return x.fault;},FAULT),D.length);
+    rows(document.getElementById('s-sev'),count(D,function(x){return x.sev;},SEV),D.length);
+    var dev={}; D.forEach(function(x){ (x.authors||[]).forEach(function(a){dev[a]=(dev[a]||0)+1;}); });
+    var devs=Object.keys(dev).sort(function(a,b){return dev[b]-dev[a];});
+    rows(document.getElementById('s-dev'),devs.map(function(a){return [a,dev[a]];}));
+    var note=el('p','i-src','An issue can involve more than one developer, so these add up to more than the total.'); document.getElementById('s-dev').parentNode.appendChild(note);
+
+    var fs=document.getElementById('f-status'),ff=document.getElementById('f-fault'),fd=document.getElementById('f-dev'),fl=document.getElementById('f-list'),fq=document.getElementById('f-q');
+    opt(fs,[['_unfixed','Not fixed yet (any)']].concat(STATUS),'All statuses'); opt(ff,FAULT,'Anyone'); opt(fd,devs.map(function(a){return [a,a];}),'All developers');
+    opt(fl,Object.keys(LISTS).map(function(k){return [k,LISTS[k]];}),'All lists');
+    try{ var h=location.hash.slice(1); if(h==='agency'){ff.value='agency';} if(h==='open'){fs.value='_unfixed';} }catch(e){}
+
+    function render(){
+      var s=fs.value,f=ff.value,d=fd.value,l=fl.value,q=fq.value.trim().toLowerCase();
+      var R=D.filter(function(x){
+        if(s==='_unfixed'){ if(x.status==='fixed_live'||x.status==='fixed_staging'||x.status==='not_a_bug') return false; } else if(s && x.status!==s) return false;
+        if(f && x.fault!==f) return false; if(d && (x.authors||[]).indexOf(d)<0) return false; if(l && x.list!==l) return false;
+        if(q && (x.id+' '+x.title+' '+x.plain).toLowerCase().indexOf(q)<0) return false; return true; });
+      document.getElementById('count').textContent='Showing '+R.length+' of '+D.length;
+      var root=document.getElementById('list'); root.textContent='';
+      SEV.forEach(function(sv){ var items=R.filter(function(x){return x.sev===sv[0];}); if(!items.length) return;
+        var g=el('section','group sev-'+sv[0]); var h=el('div','group-head'); h.appendChild(el('span','lbl',sv[1])); h.appendChild(el('span','n',items.length)); g.appendChild(h);
+        items.forEach(function(x){ var it=el('article','item sev-'+x.sev);
+          it.appendChild(el('span','i-id',x.id));
+          var b=el('div'); b.appendChild(el('span','i-title',x.title)); b.appendChild(el('span','i-plain',x.plain));
+          b.appendChild(el('span','i-src',LISTS[x.list]+(x.related&&x.related.length?' · related: '+x.related.join(', '):''))); it.appendChild(b);
+          var st=el('div','i-status'); st.appendChild(el('span','pill st-'+x.status,lab(STATUS,x.status))); if(x.status_note) st.appendChild(el('span','i-note',x.status_note)); it.appendChild(st);
+          var w=el('div','i-who',lab(FAULT,x.fault)); w.appendChild(el('small',null,(x.authors||[]).join(', ')+(x.years?' · '+x.years:''))); it.appendChild(w);
+          g.appendChild(it); });
+        root.appendChild(g); });
+    }
+    [fs,ff,fd,fl].forEach(function(e){e.addEventListener('change',render);}); fq.addEventListener('input',render); render();
+  }
+})();
+</script>
+</body>
+</html>
